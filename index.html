@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#14243a">
+<title>MY SECRETARY</title>
+<style>
+:root{--navy:#14243a;--blue:#2463eb;--bg:#f3f6fb;--card:#fff;--text:#172338;--muted:#718096;--line:#e4eaf2;--green:#16865b;--orange:#c77b12;--red:#c44747}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+header{background:var(--navy);color:#fff;padding:18px max(18px,calc((100% - 1120px)/2));display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{font-size:20px;font-weight:800;letter-spacing:1.5px}.brand small{display:block;font-size:11px;font-weight:500;letter-spacing:2px;color:#b9c8dd}
+main{max-width:1120px;margin:24px auto;padding:0 16px}.topline{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+h1{font-size:25px;margin:0 0 4px}.sub{color:var(--muted);font-size:13px}
+button,.btn{border:0;border-radius:10px;padding:11px 16px;font:600 14px system-ui;cursor:pointer;background:var(--blue);color:white}
+button.secondary{background:#e9effb;color:#24416d}button.danger{background:#fff0f0;color:var(--red)}button.ghost{background:transparent;color:var(--muted);border:1px solid var(--line)}
+button:active{transform:translateY(1px)}
+.tabs{display:flex;gap:8px;border-bottom:1px solid var(--line);margin-bottom:18px;overflow:auto}
+.tab{background:transparent;color:var(--muted);border-radius:8px 8px 0 0;padding:12px 16px;white-space:nowrap}
+.tab.active{background:#e8efff;color:var(--blue);border-bottom:3px solid var(--blue)}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}
+.card,.panel{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:17px;box-shadow:0 3px 12px #1b355508}
+.stat-label{font-size:13px;color:var(--muted)}.stat-number{font-size:29px;font-weight:750;margin-top:5px}
+.panel h2{font-size:17px;margin:0 0 14px}.panel{margin-bottom:16px}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}.toolbar input,.toolbar select{flex:1;min-width:150px}
+input,select,textarea{width:100%;border:1px solid #d8e0eb;border-radius:9px;padding:11px 12px;font:14px system-ui;background:white;color:var(--text)}
+textarea{min-height:85px;resize:vertical}
+.formgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.field label{display:block;font-size:12px;font-weight:650;color:#53627a;margin:0 0 5px}.full{grid-column:1/-1}
+.actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin-top:16px}
+.item{border:1px solid var(--line);border-radius:12px;padding:14px;margin:10px 0;background:#fff}
+.itemhead{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.item h3{margin:0 0 5px;font-size:16px}
+.meta{font-size:12px;color:var(--muted);display:flex;gap:12px;flex-wrap:wrap}
+.pill{display:inline-block;border-radius:30px;padding:4px 9px;font-size:11px;font-weight:700;background:#edf1f6;color:#53627a}
+.pill.done{background:#e4f5ed;color:var(--green)}.pill.progress{background:#fff2dc;color:var(--orange)}.pill.cancel{background:#ffeded;color:var(--red)}
+.item-actions{display:flex;gap:6px;margin-top:12px}.item-actions button{padding:7px 10px;font-size:12px}
+.empty{text-align:center;color:var(--muted);padding:28px 10px}
+.notice{padding:11px 13px;border-radius:10px;background:#eaf3ff;color:#31547e;font-size:13px;margin-bottom:15px}
+.notice.warn{background:#fff4df;color:#805713}
+.hidden{display:none!important}
+.modalback{position:fixed;inset:0;background:#0c192c99;display:flex;align-items:center;justify-content:center;padding:14px;z-index:5}
+.modal{background:white;border-radius:16px;padding:20px;width:min(680px,100%);max-height:94vh;overflow:auto}
+.modalhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}.modalhead h2{margin:0}
+.close{background:#eef2f7;color:#40516a;padding:7px 11px}
+footer{text-align:center;color:var(--muted);font-size:11px;padding:22px}
+@media(max-width:760px){.cards{grid-template-columns:repeat(2,1fr)}main{margin:17px auto}.formgrid{grid-template-columns:1fr}.full{grid-column:auto}.itemhead{display:block}.itemhead .pill{margin-top:8px}}
+@media(max-width:380px){.cards{gap:8px}.card{padding:12px}.stat-number{font-size:24px}}
+</style>
+</head>
+<body>
+<header><div class="brand">MY SECRETARY<small>ORGANIZZA • GESTISCI • CONTROLLA</small></div><span id="today" style="font-size:12px;color:#c7d4e5"></span></header>
+<main>
+ <div class="topline"><div><h1 id="pageTitle">Panoramica</h1><div class="sub">Tieni sotto controllo le tue attività</div></div><button id="newBtn">＋ Nuovo intervento</button></div>
+ <div id="storageNotice" class="notice hidden"></div>
+ <nav class="tabs">
+  <button class="tab active" data-tab="overview">Panoramica</button>
+  <button class="tab" data-tab="interventions">Interventi</button>
+  <button class="tab" data-tab="calendar">Agenda</button>
+  <button class="tab" data-tab="backup">Backup dati</button>
+ </nav>
+ <section id="overview">
+  <div class="cards">
+   <div class="card"><div class="stat-label">Interventi totali</div><div class="stat-number" id="totalCount">0</div></div>
+   <div class="card"><div class="stat-label">Da fare</div><div class="stat-number" id="todoCount">0</div></div>
+   <div class="card"><div class="stat-label">In corso</div><div class="stat-number" id="progressCount">0</div></div>
+   <div class="card"><div class="stat-label">Completati</div><div class="stat-number" id="doneCount">0</div></div>
+  </div>
+  <div class="panel"><h2>Interventi recenti</h2><div id="recentList"></div></div>
+ </section>
+ <section id="interventions" class="hidden">
+  <div class="toolbar"><input id="searchInput" placeholder="Cerca per titolo, cliente o descrizione…"><select id="statusFilter"><option value="">Tutti gli stati</option><option>Da fare</option><option>In corso</option><option>Completato</option><option>Annullato</option></select></div>
+  <div class="panel"><h2>Elenco interventi</h2><div id="allList"></div></div>
+ </section>
+ <section id="calendar" class="hidden">
+  <div class="panel"><h2>Agenda degli interventi</h2><div id="agendaList"></div></div>
+ </section>
+ <section id="backup" class="hidden">
+  <div class="panel"><h2>Backup e ripristino</h2>
+   <p class="sub">Esporta una copia dei tuoi dati oppure importa un backup precedente. I dati sono salvati nel browser del dispositivo.</p>
+   <div class="actions" style="justify-content:flex-start"><button id="exportBtn">Esporta backup JSON</button><button class="secondary" id="importBtn">Importa backup</button><input type="file" id="importFile" accept=".json,application/json" class="hidden"></div>
+   <p class="sub" style="margin-top:16px">Suggerimento: esporta periodicamente un backup e conservalo in un luogo sicuro.</p>
+  </div>
+ </section>
+</main>
+<footer>MY SECRETARY • Versione 4.0 • I dati restano nel browser utilizzato</footer>
+
+<div id="modalBack" class="modalback hidden">
+ <div class="modal">
+  <div class="modalhead"><h2 id="modalTitle">Nuovo intervento</h2><button class="close" id="closeModal">✕</button></div>
+  <form id="interventionForm">
+   <input type="hidden" id="editId">
+   <div class="formgrid">
+    <div class="field full"><label for="title">Titolo intervento *</label><input id="title" required maxlength="100" placeholder="Es. Manutenzione impianto"></div>
+    <div class="field"><label for="client">Cliente</label><input id="client" maxlength="100"></div>
+    <div class="field"><label for="phone">Telefono</label><input id="phone" type="tel" maxlength="30"></div>
+    <div class="field"><label for="date">Data</label><input id="date" type="date"></div>
+    <div class="field"><label for="status">Stato</label><select id="status"><option>Da fare</option><option>In corso</option><option>Completato</option><option>Annullato</option></select></div>
+    <div class="field"><label for="category">Categoria</label><input id="category" maxlength="60" placeholder="Es. Assistenza, manutenzione…"></div>
+    <div class="field"><label for="amount">Importo (€)</label><input id="amount" type="number" min="0" step="0.01" placeholder="0,00"></div>
+    <div class="field full"><label for="address">Indirizzo / luogo</label><input id="address" maxlength="180"></div>
+    <div class="field full"><label for="description">Descrizione</label><textarea id="description" maxlength="1500"></textarea></div>
+    <div class="field full"><label for="notes">Note</label><textarea id="notes" maxlength="1500"></textarea></div>
+   </div>
+   <div class="actions"><button type="button" class="ghost" id="cancelBtn">Annulla</button><button type="submit">Salva intervento</button></div>
+  </form>
+ </div>
+</div>
+<script>
+(() => {
+ 'use strict';
+ const KEY='my_secretary_interventions_v4';
+ let records=[];
+ const $=id=>document.getElementById(id);
+ const today=new Date().toISOString().slice(0,10);
+ $('today').textContent=new Date().toLocaleDateString('it-IT',{weekday:'short',day:'2-digit',month:'short',year:'numeric'});
+ function load(){
+  try{const raw=localStorage.getItem(KEY);records=raw?JSON.parse(raw):[];if(!Array.isArray(records))records=[];}
+  catch(e){records=[];showStorageWarning('Il browser non consente di leggere i dati salvati. Apri l’app tramite un indirizzo HTTPS (ad esempio GitHub Pages).');}
+ }
+ function save(){
+  try{localStorage.setItem(KEY,JSON.stringify(records));$('storageNotice').classList.add('hidden');return true;}
+  catch(e){showStorageWarning('ATTENZIONE: il salvataggio permanente non è riuscito. Verifica lo spazio disponibile e usa Backup dati.');return false;}
+ }
+ function showStorageWarning(msg){$('storageNotice').textContent=msg;$('storageNotice').classList.remove('hidden');$('storageNotice').classList.add('warn');}
+ function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+ function statusClass(s){return s==='Completato'?'done':s==='In corso'?'progress':s==='Annullato'?'cancel':'';}
+ function dateFmt(d){if(!d)return 'Data non indicata';const p=d.split('-');return p.length===3?`${p[2]}/${p[1]}/${p[0]}`:d;}
+ function card(r){
+  return `<article class="item"><div class="itemhead"><div><h3>${esc(r.title)}</h3><div class="meta"><span>👤 ${esc(r.client||'Cliente non indicato')}</span><span>📅 ${dateFmt(r.date)}</span>${r.phone?`<span>☎ ${esc(r.phone)}</span>`:''}</div></div><span class="pill ${statusClass(r.status)}">${esc(r.status)}</span></div>
+  ${r.description?`<p style="font-size:13px;margin:10px 0 0;color:#526078">${esc(r.description)}</p>`:''}
+  ${r.address?`<div class="meta" style="margin-top:8px">📍 ${esc(r.address)}</div>`:''}
+  <div class="item-actions"><button class="secondary" data-edit="${esc(r.id)}">Modifica</button><button class="ghost" data-status="${esc(r.id)}">Cambia stato</button><button class="danger" data-delete="${esc(r.id)}">Elimina</button></div></article>`;
+ }
+ function bindActions(root){
+  root.querySelectorAll('[data-edit]').forEach(b=>b.addEventListener('click',()=>openForm(b.dataset.edit)));
+  root.querySelectorAll('[data-delete]').forEach(b=>b.addEventListener('click',()=>removeRecord(b.dataset.delete)));
+  root.querySelectorAll('[data-status]').forEach(b=>b.addEventListener('click',()=>cycleStatus(b.dataset.status)));
+ }
+ function render(){
+  $('totalCount').textContent=records.length;
+  $('todoCount').textContent=records.filter(r=>r.status==='Da fare').length;
+  $('progressCount').textContent=records.filter(r=>r.status==='In corso').length;
+  $('doneCount').textContent=records.filter(r=>r.status==='Completato').length;
+  const sorted=[...records].sort((a,b)=>(b.updatedAt||'').localeCompare(a.updatedAt||''));
+  $('recentList').innerHTML=sorted.length?sorted.slice(0,5).map(card).join(''):'<div class="empty">Ancora nessun intervento. Premi “Nuovo intervento” per iniziare.</div>';
+  bindActions($('recentList'));renderAll();renderAgenda();
+ }
+ function renderAll(){
+  const q=$('searchInput').value.trim().toLowerCase(),st=$('statusFilter').value;
+  const arr=[...records].filter(r=>(!st||r.status===st)&&(!q||[r.title,r.client,r.description,r.address,r.category].join(' ').toLowerCase().includes(q))).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  $('allList').innerHTML=arr.length?arr.map(card).join(''):'<div class="empty">Nessun intervento trovato.</div>';bindActions($('allList'));
+ }
+ function renderAgenda(){
+  const arr=[...records].filter(r=>r.date).sort((a,b)=>a.date.localeCompare(b.date));
+  $('agendaList').innerHTML=arr.length?arr.map(card).join(''):'<div class="empty">Non ci sono interventi con una data assegnata.</div>';bindActions($('agendaList'));
+ }
+ function switchTab(name){
+  ['overview','interventions','calendar','backup'].forEach(t=>$(t).classList.toggle('hidden',t!==name));
+  document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===name));
+  $('pageTitle').textContent=({overview:'Panoramica',interventions:'Interventi',calendar:'Agenda',backup:'Backup dati'})[name];
+  if(name==='interventions')renderAll();
+ }
+ document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>switchTab(b.dataset.tab)));
+ function openForm(id){
+  $('interventionForm').reset();$('editId').value='';
+  $('date').value=today;$('status').value='Da fare';$('modalTitle').textContent='Nuovo intervento';
+  if(id){const r=records.find(x=>x.id===id);if(!r)return;
+   $('editId').value=r.id;$('title').value=r.title||'';$('client').value=r.client||'';$('phone').value=r.phone||'';$('date').value=r.date||'';$('status').value=r.status||'Da fare';$('category').value=r.category||'';$('amount').value=r.amount??'';$('address').value=r.address||'';$('description').value=r.description||'';$('notes').value=r.notes||'';$('modalTitle').textContent='Modifica intervento';
+  }
+  $('modalBack').classList.remove('hidden');setTimeout(()=>$('title').focus(),80);
+ }
+ function closeForm(){$('modalBack').classList.add('hidden');}
+ $('newBtn').addEventListener('click',()=>openForm());
+ $('closeModal').addEventListener('click',closeForm);$('cancelBtn').addEventListener('click',closeForm);
+ $('modalBack').addEventListener('click',e=>{if(e.target===$('modalBack'))closeForm();});
+ $('interventionForm').addEventListener('submit',e=>{
+  e.preventDefault();
+  const id=$('editId').value;
+  const obj={id:id||('ms_'+Date.now()+'_'+Math.random().toString(36).slice(2,8)),title:$('title').value.trim(),client:$('client').value.trim(),phone:$('phone').value.trim(),date:$('date').value,status:$('status').value,category:$('category').value.trim(),amount:$('amount').value?Number($('amount').value):'',address:$('address').value.trim(),description:$('description').value.trim(),notes:$('notes').value.trim(),updatedAt:new Date().toISOString()};
+  if(!obj.title){$('title').focus();return;}
+  if(id){const i=records.findIndex(r=>r.id===id);if(i>=0)records[i]=obj;}else records.push(obj);
+  save();render();closeForm();switchTab('overview');
+ });
+ function removeRecord(id){const r=records.find(x=>x.id===id);if(!r||!confirm(`Eliminare "${r.title}"?`))return;records=records.filter(x=>x.id!==id);save();render();}
+ function cycleStatus(id){const r=records.find(x=>x.id===id);if(!r)return;const states=['Da fare','In corso','Completato','Annullato'];r.status=states[(states.indexOf(r.status)+1)%states.length];r.updatedAt=new Date().toISOString();save();render();}
+ $('searchInput').addEventListener('input',renderAll);$('statusFilter').addEventListener('change',renderAll);
+ $('exportBtn').addEventListener('click',()=>{
+  const blob=new Blob([JSON.stringify({app:'MY SECRETARY',version:4,exportedAt:new Date().toISOString(),records},null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='my-secretary-backup-'+today+'.json';a.click();URL.revokeObjectURL(a.href);
+ });
+ $('importBtn').addEventListener('click',()=>$('importFile').click());
+ $('importFile').addEventListener('change',async e=>{
+  const f=e.target.files[0];if(!f)return;
+  try{const data=JSON.parse(await f.text());const incoming=Array.isArray(data)?data:data.records;if(!Array.isArray(incoming))throw Error('Formato non valido');
+   if(!confirm(`Importare ${incoming.length} interventi? I dati attuali verranno sostituiti.`))return;
+   records=incoming.map(r=>({...r,id:String(r.id||('ms_'+Date.now()+Math.random())),title:String(r.title||'Intervento senza titolo'),status:r.status||'Da fare'}));save();render();switchTab('overview');alert('Backup importato correttamente.');
+  }catch(err){alert('Impossibile importare il file: controlla che sia un backup MY SECRETARY valido.');}
+  e.target.value='';
+ });
+ load();render();
+})();
+</script>
+</body>
+</html>
